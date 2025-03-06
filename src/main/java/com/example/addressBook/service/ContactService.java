@@ -4,7 +4,6 @@ import com.example.addressBook.dto.ContactDTO;
 import com.example.addressBook.mapper.ContactMapper;
 import com.example.addressBook.model.Contact;
 import com.example.addressBook.repository.ContactRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,11 +13,13 @@ import java.util.stream.Collectors;
 @Service
 public class ContactService {
 
-    @Autowired
-    private ContactRepository contactRepository;
+    private final ContactRepository contactRepository;
+    private final ContactMapper contactMapper;
 
-    @Autowired
-    private ContactMapper contactMapper;
+    public ContactService(ContactRepository contactRepository, ContactMapper contactMapper) {
+        this.contactRepository = contactRepository;
+        this.contactMapper = contactMapper;
+    }
 
     public List<ContactDTO> getAllContacts() {
         return contactRepository.findAll()
@@ -36,16 +37,21 @@ public class ContactService {
         return contactMapper.toDTO(contactRepository.save(contact));
     }
 
-    public ContactDTO updateContact(Long id, ContactDTO contactDTO) {
+    public Optional<ContactDTO> updateContact(Long id, ContactDTO contactDTO) {
         return contactRepository.findById(id)
                 .map(existingContact -> {
                     existingContact.setName(contactDTO.getName());
                     existingContact.setEmail(contactDTO.getEmail());
+                    existingContact.setPhone(contactDTO.getPhone()); // ✅ Fix: Update Phone Number
                     return contactMapper.toDTO(contactRepository.save(existingContact));
-                }).orElse(null);
+                });
     }
 
-    public void deleteContact(Long id) {
-        contactRepository.deleteById(id);
+    public boolean deleteContact(Long id) {
+        if (contactRepository.existsById(id)) {
+            contactRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }

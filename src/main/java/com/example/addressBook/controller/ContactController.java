@@ -2,7 +2,6 @@ package com.example.addressBook.controller;
 
 import com.example.addressBook.dto.ContactDTO;
 import com.example.addressBook.service.ContactService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,8 +12,12 @@ import java.util.Optional;
 @RequestMapping("/api/contacts")
 public class ContactController {
 
-    @Autowired
-    private ContactService contactService;
+    private final ContactService contactService;
+
+    // Constructor-based Dependency Injection
+    public ContactController(ContactService contactService) {
+        this.contactService = contactService;
+    }
 
     @GetMapping
     public ResponseEntity<List<ContactDTO>> getAllContacts() {
@@ -35,13 +38,13 @@ public class ContactController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ContactDTO> updateContact(@PathVariable Long id, @RequestBody ContactDTO contactDTO) {
-        ContactDTO updatedContact = contactService.updateContact(id, contactDTO);
-        return updatedContact != null ? ResponseEntity.ok(updatedContact) : ResponseEntity.notFound().build();
+        Optional<ContactDTO> updatedContact = contactService.updateContact(id, contactDTO);
+        return updatedContact.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteContact(@PathVariable Long id) {
-        contactService.deleteContact(id);
-        return ResponseEntity.noContent().build();
+        boolean isDeleted = contactService.deleteContact(id);
+        return isDeleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 }
