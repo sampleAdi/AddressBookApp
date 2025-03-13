@@ -2,6 +2,7 @@ package com.example.addressBook.controller;
 
 import com.example.addressBook.dto.ContactDTO;
 import com.example.addressBook.service.ContactService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,12 +33,12 @@ public class ContactController {
     }
 
     @PostMapping
-    public ResponseEntity<ContactDTO> addContact(@RequestBody ContactDTO contactDTO) {
+    public ResponseEntity<ContactDTO> addContact(@Valid @RequestBody ContactDTO contactDTO) {
         return ResponseEntity.ok(contactService.addContact(contactDTO));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ContactDTO> updateContact(@PathVariable Long id, @RequestBody ContactDTO contactDTO) {
+    public ResponseEntity<ContactDTO> updateContact(@PathVariable Long id, @Valid @RequestBody ContactDTO contactDTO) {
         Optional<ContactDTO> updatedContact = contactService.updateContact(id, contactDTO);
         return updatedContact.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
