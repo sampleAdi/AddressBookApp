@@ -17,8 +17,7 @@ import java.util.List;
 @RequestMapping("/api/contacts")
 public class ContactController {
 
-    // Remove private final, use constructor injection
-    IContactService contactService;
+    private final IContactService contactService;
 
     public ContactController(IContactService contactService) {
         this.contactService = contactService;
