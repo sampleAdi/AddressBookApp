@@ -2,50 +2,60 @@ package com.example.addressBook.controller;
 
 import com.example.addressBook.dto.ContactDTO;
 import com.example.addressBook.service.ContactService;
-import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 
+@Slf4j
 @RestController
+@Validated
 @RequestMapping("/api/contacts")
 public class ContactController {
 
     private final ContactService contactService;
 
-    // Constructor-based Dependency Injection
     public ContactController(ContactService contactService) {
         this.contactService = contactService;
     }
 
     @GetMapping
     public ResponseEntity<List<ContactDTO>> getAllContacts() {
-        return ResponseEntity.ok(contactService.getAllContacts());
+        log.info("Fetching all contacts");
+        List<ContactDTO> contacts = contactService.getAllContacts();
+        log.info("Retrieved {} contacts", contacts.size());
+        return ResponseEntity.ok(contacts);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ContactDTO> getContactById(@PathVariable Long id) {
-        Optional<ContactDTO> contactDTO = contactService.getContactById(id);
-        return contactDTO.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        log.info("Fetching contact with ID: {}", id);
+        ContactDTO contactDTO = contactService.getContactById(id);
+        return ResponseEntity.ok(contactDTO);
     }
 
     @PostMapping
-    public ResponseEntity<ContactDTO> addContact(@Valid @RequestBody ContactDTO contactDTO) {
-        return ResponseEntity.ok(contactService.addContact(contactDTO));
+    public ResponseEntity<ContactDTO> addContact(@RequestBody @Valid ContactDTO contactDTO) {
+        log.info("Adding new contact: {}", contactDTO);
+        ContactDTO savedContact = contactService.addContact(contactDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedContact);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ContactDTO> updateContact(@PathVariable Long id, @Valid @RequestBody ContactDTO contactDTO) {
-        Optional<ContactDTO> updatedContact = contactService.updateContact(id, contactDTO);
-        return updatedContact.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<ContactDTO> updateContact(@PathVariable Long id, @RequestBody @Valid ContactDTO contactDTO) {
+        log.info("Updating contact with ID: {}", id);
+        ContactDTO updatedContact = contactService.updateContact(id, contactDTO);
+        return ResponseEntity.ok(updatedContact);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteContact(@PathVariable Long id) {
-        boolean isDeleted = contactService.deleteContact(id);
-        return isDeleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+        log.info("Deleting contact with ID: {}", id);
+        contactService.deleteContact(id);
+        return ResponseEntity.noContent().build(); // 204 No Content
     }
 }
