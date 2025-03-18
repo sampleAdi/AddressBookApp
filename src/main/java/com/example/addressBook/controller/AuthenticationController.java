@@ -1,31 +1,43 @@
 package com.example.addressBook.controller;
 
 import com.example.addressBook.dto.AuthUserDTO;
-import com.example.addressBook.service.AuthenticationService;
-import com.example.addressBook.service.EmailService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
 import com.example.addressBook.dto.LoginDTO;
+import com.example.addressBook.dto.PasswordResetDTO;
+import com.example.addressBook.service.AuthenticationService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/auth")  // 🔹 Base URL for all authentication endpoints
 public class AuthenticationController {
-    EmailService emailService;
-    AuthenticationService authenticationService;
 
-    public AuthenticationController(EmailService emailService, AuthenticationService authenticationService) {
-        this.emailService = emailService;
+    private final AuthenticationService authenticationService;
+
+    public AuthenticationController(AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
     }
 
-    //============================UC9(Register and Login for a User)
-    @PostMapping(path = "/register")
-    public String register(@RequestBody AuthUserDTO user){
-        return authenticationService.register(user);
+    // 🔹 Register User
+    @PostMapping("/register")
+    public ResponseEntity<String> register(@RequestBody AuthUserDTO user) {
+        return ResponseEntity.ok(authenticationService.register(user));
     }
 
-    @PostMapping(path ="/login")
-    public String login(@RequestBody LoginDTO user){
-        return authenticationService.login(user);
+    // 🔹 Login User
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody LoginDTO user) {
+        return ResponseEntity.ok(authenticationService.login(user));
+    }
+
+    // 🔹 Forgot Password (User provides email & new phone)
+    @PutMapping("/forgotPassword/{email}")
+    public ResponseEntity<String> forgotPassword(@PathVariable String email, @RequestBody PasswordResetDTO passwordResetDTO) {
+        return ResponseEntity.ok(authenticationService.forgotPassword(email, passwordResetDTO.getNewPhone()));
+    }
+
+    // 🔹 Reset Password (User provides email, current phone & new phone)
+    @PutMapping("/resetPassword/{email}")
+    public ResponseEntity<String> resetPassword(@PathVariable String email, @RequestBody PasswordResetDTO passwordResetDTO) {
+        return ResponseEntity.ok(authenticationService.resetPassword(email, passwordResetDTO.getCurrentPhone(), passwordResetDTO.getNewPhone()));
     }
 }
