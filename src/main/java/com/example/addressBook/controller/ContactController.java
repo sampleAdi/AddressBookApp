@@ -3,6 +3,7 @@ package com.example.addressBook.controller;
 import com.example.addressBook.dto.ContactDTO;
 import com.example.addressBook.service.IContactService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -17,8 +18,9 @@ import java.util.List;
 @RequestMapping("/api/contacts")
 public class ContactController {
 
-    IContactService contactService;
+    private IContactService contactService;
 
+    @Autowired
     public ContactController(IContactService contactService) {
         this.contactService = contactService;
     }
@@ -26,25 +28,29 @@ public class ContactController {
     @GetMapping
     public ResponseEntity<List<ContactDTO>> getAllContacts() {
         log.info("Fetching all contacts");
-        return ResponseEntity.ok(contactService.getAllContacts());
+        List<ContactDTO> contacts = contactService.getAllContacts();
+        return ResponseEntity.ok(contacts);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ContactDTO> getContactById(@PathVariable Long id) {
         log.info("Fetching contact with ID: {}", id);
-        return ResponseEntity.ok(contactService.getContactById(id));
+        ContactDTO contactDTO = contactService.getContactById(id);
+        return ResponseEntity.ok(contactDTO);
     }
 
     @PostMapping
     public ResponseEntity<ContactDTO> addContact(@RequestBody @Valid ContactDTO contactDTO) {
         log.info("Adding new contact: {}", contactDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(contactService.addContact(contactDTO));
+        ContactDTO savedContact = contactService.addContact(contactDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedContact);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ContactDTO> updateContact(@PathVariable Long id, @RequestBody @Valid ContactDTO contactDTO) {
         log.info("Updating contact with ID: {}", id);
-        return ResponseEntity.ok(contactService.updateContact(id, contactDTO));
+        ContactDTO updatedContact = contactService.updateContact(id, contactDTO);
+        return ResponseEntity.ok(updatedContact);
     }
 
     @DeleteMapping("/{id}")
