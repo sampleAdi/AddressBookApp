@@ -2,6 +2,7 @@ package com.example.addressBook.controller;
 
 import com.example.addressBook.dto.ContactDTO;
 import com.example.addressBook.service.IContactService;
+import com.example.addressBook.service.MessageProducer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,7 +19,11 @@ import java.util.List;
 @RequestMapping("/api/contacts")
 public class ContactController {
 
-    private IContactService contactService;
+    IContactService contactService;
+
+    @Autowired
+    MessageProducer messageProducer;  // Inject RabbitMQ Producer
+
 
     @Autowired
     public ContactController(IContactService contactService) {
@@ -58,5 +63,12 @@ public class ContactController {
         log.info("Deleting contact with ID: {}", id);
         contactService.deleteContact(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Send Contact Details to RabbitMQ
+    @PostMapping("/sendToQueue")
+    public ResponseEntity<String> sendToQueue(@RequestBody ContactDTO dto) {
+        messageProducer.sendMessage("Contact Info: " + dto.toString());
+        return ResponseEntity.ok("Contact sent to RabbitMQ successfully");
     }
 }
