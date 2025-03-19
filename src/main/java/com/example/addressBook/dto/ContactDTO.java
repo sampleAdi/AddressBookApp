@@ -9,13 +9,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
 @EqualsAndHashCode
-public class ContactDTO {
+public class ContactDTO implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private Long id;
 
