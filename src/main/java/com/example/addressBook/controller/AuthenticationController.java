@@ -4,17 +4,22 @@ import com.example.addressBook.dto.AuthUserDTO;
 import com.example.addressBook.dto.LoginDTO;
 import com.example.addressBook.dto.PasswordResetDTO;
 import com.example.addressBook.service.AuthenticationService;
+import com.example.addressBook.service.EmailService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.addressBook.dto.MailDTO;
 
 @RestController
 @RequestMapping("/auth")  // 🔹 Base URL for all authentication endpoints
 public class AuthenticationController {
 
+    private final EmailService emailService;  // Declare EmailService as a final field
     private final AuthenticationService authenticationService;
 
-    public AuthenticationController(AuthenticationService authenticationService) {
+    // Constructor Injection for both AuthenticationService and EmailService
+    public AuthenticationController(AuthenticationService authenticationService, EmailService emailService) {
         this.authenticationService = authenticationService;
+        this.emailService = emailService;  // Initialize emailService via constructor
     }
 
     // 🔹 Register User
@@ -40,4 +45,11 @@ public class AuthenticationController {
     public ResponseEntity<String> resetPassword(@PathVariable String email, @RequestBody PasswordResetDTO passwordResetDTO) {
         return ResponseEntity.ok(authenticationService.resetPassword(email, passwordResetDTO.getCurrentPhone(), passwordResetDTO.getNewPhone()));
     }
+
+    //==============================Sendmail======================//
+    @PostMapping(path="/sendMail")
+    public String sendMail(@RequestBody MailDTO user){ emailService.sendEmail(user.getTo(), user.getSubject(), user.getBody());
+        return "Mail Sent Successfully";
+    }
+
 }

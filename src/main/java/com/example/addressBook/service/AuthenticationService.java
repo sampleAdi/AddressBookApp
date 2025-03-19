@@ -32,7 +32,7 @@ public class AuthenticationService {
         AuthUser newUser = new AuthUser(user.getName(), user.getEmail(), user.getPhone(), hashPass);
         userRepository.save(newUser);
 
-        emailService.sendEmail(user.getEmail(), "Registration Successful", "Welcome, " + user.getName() + "!");
+        emailService.sendEmail(user.getEmail(), "Registration Successful", "Welcome, " + user.getName() + "! You have registered successfully! Regards,BridgeLabz");
         return "User registered successfully";
     }
 
