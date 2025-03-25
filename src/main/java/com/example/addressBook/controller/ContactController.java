@@ -19,15 +19,13 @@ import java.util.List;
 @RequestMapping("/api/contacts")
 public class ContactController {
 
-    IContactService contactService;
+    private final IContactService contactService;
+    private final MessageProducer messageProducer;
 
     @Autowired
-    MessageProducer messageProducer;  // Inject RabbitMQ Producer
-
-
-    @Autowired
-    public ContactController(IContactService contactService) {
+    public ContactController(IContactService contactService, MessageProducer messageProducer) {
         this.contactService = contactService;
+        this.messageProducer = messageProducer;
     }
 
     @GetMapping
@@ -58,17 +56,22 @@ public class ContactController {
         return ResponseEntity.ok(updatedContact);
     }
 
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteContact(@PathVariable Long id) {
+    public ResponseEntity<String> deleteContact(@PathVariable Long id) {
         log.info("Deleting contact with ID: {}", id);
-        contactService.deleteContact(id);
-        return ResponseEntity.noContent().build();
+        try {
+            contactService.deleteContact(id);
+            return ResponseEntity.ok("Contact deleted successfully");
+        } catch (Exception e) {
+            log.error("Error deleting contact", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting contact");
+        }
     }
 
-    // Send Contact Details to RabbitMQ
     @PostMapping("/sendToQueue")
     public ResponseEntity<String> sendToQueue(@RequestBody ContactDTO dto) {
-        messageProducer.sendMessage("Contact Info: " + dto.toString());
+        messageProducer.sendMessage("Contact Info: " + dto);
         return ResponseEntity.ok("Contact sent to RabbitMQ successfully");
     }
 }
